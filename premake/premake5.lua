@@ -41,7 +41,7 @@ project "3d"
         "../vendor/GLM/include",
         "../vendor/SFML/include",
         "../vendor/PUGIXML/src",
-        "../vendor/BOOST",
+        "../vendor/FREETYPE/include",
     }
    
     libdirs{
