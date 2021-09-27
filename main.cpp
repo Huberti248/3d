@@ -612,9 +612,7 @@ int main(int argc, char* argv[])
     SDL_AddEventWatch(eventWatch, 0);
     bool running = true;
 
-    
-    #if 1
-
+#if 1
     std::string textVertexShader = R"(
 #version 330 core
 layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
@@ -644,7 +642,7 @@ void main()
 )";
 
     Shader textShader(textVertexShader, textFragmentShader);
-    glm::mat4 textProjection = glm::ortho(0.0f, static_cast<float>(windowWidth), -(float)windowHeight, -(float)windowHeight);
+    glm::mat4 textProjection = glm::ortho(0.0f, static_cast<float>(windowWidth), 0.f, (float)windowHeight);
     textShader.use();
     glUniformMatrix4fv(glGetUniformLocation(textShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
 
@@ -708,7 +706,6 @@ void main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 #endif
-
 
 #if 1
     float vertices[]{
@@ -814,6 +811,11 @@ void main()
     Shader shader(vertexShader, fragmentShader);
     shader.use();
 #endif
+
+#ifdef 1
+
+#endif
+
     glViewport(0, 0, windowWidth, windowHeight);
 
     while (running) {
@@ -846,16 +848,15 @@ void main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #if 1
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        textShader.use();
-        renderText(textShader, "This is sample text", 0, 0, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
-        glDisable(GL_CULL_FACE);
-#endif
-
-#if 1
+        // position attribute
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // texture coord attribute
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
         shader.use();
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 view = glm::mat4(1.0f);
@@ -874,6 +875,21 @@ void main()
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
 #endif
+
+#if 1
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glm::mat4 textProjection = glm::ortho(0.0f, static_cast<float>(windowWidth), 0.f, (float)windowHeight);
+        textShader.use();
+        glUniformMatrix4fv(glGetUniformLocation(textShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(textProjection));
+        renderText(textShader, "This is sample text", 0, 0, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+        glDisable(GL_CULL_FACE);
+#endif
+
         SDL_GL_SwapWindow(window);
 
         SDL_Delay(100);
